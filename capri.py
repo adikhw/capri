@@ -53,3 +53,38 @@ def collect_entries(start_dir):
             entries.append(Entry(name=f, full_path=full_path, is_dir=False))
 
     return entries
+
+
+def fuzzy_score(query, target):
+    q = query.lower()
+    t = target.lower()
+    score = 0
+    start_position = 0
+    previous_position = -1
+
+    for char in q:
+        position = t.find(char, start_position)
+
+        if position == -1:
+            return 0
+
+        score += BASE_POINT
+
+        if position == previous_position + 1:
+            score += CONSECUTIVE_BONUS
+
+        if position == 0 or t[position - 1] in SEPARATOR:
+            score += WORD_START_BONUS
+
+        previous_position = position
+        start_position = position + 1
+
+    if t == q:
+        score += EXACT_MATCH_BONUS
+    elif t.startswith(q):
+        score += PREFIX_BONUS 
+
+    score -= len(t) * LENGTH_PENALTY
+
+    return max(score, 1)
+
