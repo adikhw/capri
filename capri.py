@@ -88,3 +88,24 @@ def fuzzy_score(query, target):
 
     return max(score, 1)
 
+
+def score_entry(query, entry, start_dir):
+    name_score = fuzzy_score(query, entry.name)
+
+    rel = os.path.relpath(entry.full_path, start_dir)
+    path_score = fuzzy_score(query, rel)
+
+    return max(name_score * NAME_WEIGHT, path_score)
+
+
+def search(query, entries, start_dir):
+    result = []
+
+    for entry in entries:
+        score = score_entry(query, entry, start_dir)
+        if score > 0:
+            result.append((score, entry))
+
+    result.sort(key=lambda h: (-h[0], len(h[1].full_path), h[1].full_path))
+
+    return [entry for _, entry in result[:MAX_RESULTS]]    
