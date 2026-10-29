@@ -123,3 +123,34 @@ def show_results(entries):
     for number, entry in enumerate(entries, start=1):
         label = "DIR " if entry.is_dir else "FILE"
         print(f"{number:>2}  [{label}]  {display_path(entry.full_path)}", file=sys.stderr)
+
+
+def ask_choice(count):
+    while True:
+        print(f"Pick a number (1-{count}, q to cancel): ", end="", file=sys.stderr, flush=True)
+        
+        try:
+            line = sys.stdin.readline()
+        except KeyboardInterrupt:
+            return None
+
+        if line == "":
+            return None
+
+        text = line.strip()
+        if text == "q":
+            return None
+
+        try:
+            number = int (text)
+        except ValueError:
+            number = None
+
+        if number is None or not (1 <= number <= count):
+            print(f"Enter a number 1-{count} or q", file=sys.stderr)
+            continue
+
+        return number
+
+
+        
