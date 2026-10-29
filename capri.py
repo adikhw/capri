@@ -82,7 +82,7 @@ def fuzzy_score(query, target):
     if t == q:
         score += EXACT_MATCH_BONUS
     elif t.startswith(q):
-        score += PREFIX_BONUS 
+        score += PREFIX_BONUS
 
     score -= len(t) * LENGTH_PENALTY
 
@@ -108,7 +108,7 @@ def search(query, entries, start_dir):
 
     result.sort(key=lambda h: (-h[0], len(h[1].full_path), h[1].full_path))
 
-    return [entry for _, entry in result[:MAX_RESULTS]]    
+    return [entry for _, entry in result[:MAX_RESULTS]]
 
 
 def display_path(full_path):
@@ -128,7 +128,7 @@ def show_results(entries):
 def ask_choice(count):
     while True:
         print(f"Pick a number (1-{count}, q to cancel): ", end="", file=sys.stderr, flush=True)
-        
+
         try:
             line = sys.stdin.readline()
         except KeyboardInterrupt:
@@ -142,7 +142,7 @@ def ask_choice(count):
             return None
 
         try:
-            number = int (text)
+            number = int(text)
         except ValueError:
             number = None
 
@@ -153,4 +153,34 @@ def ask_choice(count):
         return number
 
 
-        
+def target_directory(entry):
+    if entry.is_dir:
+        return entry.full_path
+    return os.path.dirname(entry.full_path)
+
+
+def main():
+    query = parse_query(sys.argv)
+    entries = collect_entries(START_DIR)
+    result = search(query, entries, START_DIR)
+
+    if not result:
+        print(f"No result found for '{query}'", file=sys.stderr)
+        sys.exit(1)
+
+    if len(result) == 1:
+        chosen = result[0]
+    else:
+        show_results(result)
+        choice = ask_choice(len(result))
+        if choice is None:
+            sys.exit(1)
+        chosen = result[choice - 1]
+
+    if not chosen.is_dir:
+        print("(file, moving to its parent folder)", file=sys.stderr)
+    print(target_directory(chosen))
+
+
+if __name__ == "__main__":
+    main()
