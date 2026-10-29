@@ -159,14 +159,33 @@ def target_directory(entry):
     return os.path.dirname(entry.full_path)
 
 
+def suggest(query, entries):
+    names = {}
+    for entry in entries:
+        names.setdefault(entry.name.lower(), []).append(entry)
+
+    similar = difflib.get_close_matches(
+        query.lower(),
+        names.keys(),
+        n=MAX_SUGGESTIONS,
+        cutoff=CLOSE_CUTOFF,
+    )
+
+    return [names[name][0] for name in similar]
+
+
 def main():
     query = parse_query(sys.argv)
     entries = collect_entries(START_DIR)
     result = search(query, entries, START_DIR)
 
     if not result:
-        print(f"No result found for '{query}'", file=sys.stderr)
-        sys.exit(1)
+        suggestions = suggest(query, entries)
+        if not suggestions:
+            print(f"No result found for '{query}'", file=sys.stderr)
+            sys.exit(1)
+        print("Did you mean:", file=sys.stderr)
+        result = suggestions
 
     if len(result) == 1:
         chosen = result[0]
