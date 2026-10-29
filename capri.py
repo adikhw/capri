@@ -109,3 +109,17 @@ def search(query, entries, start_dir):
     result.sort(key=lambda h: (-h[0], len(h[1].full_path), h[1].full_path))
 
     return [entry for _, entry in result[:MAX_RESULTS]]    
+
+
+def display_path(full_path):
+    try:
+        rel = Path(full_path).relative_to(Path.home())
+        return str(Path("~") / rel)
+    except ValueError:
+        return full_path
+
+
+def show_results(entries):
+    for number, entry in enumerate(entries, start=1):
+        label = "DIR " if entry.is_dir else "FILE"
+        print(f"{number:>2}  [{label}]  {display_path(entry.full_path)}", file=sys.stderr)
